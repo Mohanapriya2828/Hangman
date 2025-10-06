@@ -30,21 +30,29 @@ namespace hangman.controller
             for (int i = 0; i < guessedletters.Length; i++)
                 guessedletters[i] = '_';
 
-            while (true)
+            int lives = 3;
+
+            while (lives > 0 && new string(guessedletters) != currentword)
             {
                 view.showgamestate(guessedletters, currentword.Length, 0);
+                Console.WriteLine($"Lives: {lives}");
 
                 char guess = view.getguess();
 
+                if (Array.Exists(guessedletters, c => c == guess))
+                {
+                    Console.WriteLine($"You already guessed '{guess}'. Try another letter.");
+                    continue;
+                }
+
                 bool correct = guessrule(currentword, guessedletters, guess);
 
-                view.showgamestate(guessedletters, currentword.Length, 0);
-
-                if (new string(guessedletters) == currentword)
-                    break;
+                if (!correct) lives--;
+                else lives = 3;
             }
 
-            view.showresult(currentword, true);
+            view.showgamestate(guessedletters, currentword.Length, 0);
+            view.showresult(currentword, new string(guessedletters) == currentword);
         }
     }
 }
