@@ -1,67 +1,59 @@
 using System;
 using System.Collections.Generic;
-using hangman.model;
-using hangman.view;
+using Hangman.Model;
+using Hangman.View;
 
-namespace hangman.controller
+namespace Hangman.Controller
 {
-    public class gamecontroller
+    public class GameController
     {
-        private readonly gameview view;
-        private readonly wordrepository repo;
-        private readonly guessevent guessrule;
-
-        public gamecontroller(gameview view, wordrepository repo, guessevent guessrule)
+        private readonly GameView _view;
+        private readonly WordRepository _repo;
+        private readonly GuessHandler _guessRule;
+        public GameController(GameView view, WordRepository repo, GuessHandler guessRule)
         {
-            this.view = view;
-            this.repo = repo;
-            this.guessrule = guessrule;
+            _view = view;
+            _repo = repo;
+            _guessRule = guessRule;
         }
-
-        public void playgame()
+        public void PlayGame()
         {
-            List<word> words = repo.getallwords();
-            if (words.Count == 0) return;
-
-            Random random = new Random();
-            string currentword = words[random.Next(words.Count)].text.ToLower();
-
-            char[] guessedletters = new char[currentword.Length];
-            for (int i = 0; i < guessedletters.Length; i++)
-                guessedletters[i] = '_';
-
-            int lives = 3;
-            int wrongguesses = 0;
-
-            while (lives > 0 && new string(guessedletters) != currentword)
+            List<Word> words = _repo.GetAllWords();
+            if (words.Count == 0)
             {
-                view.showgamestate(guessedletters, currentword.Length, wrongguesses);
-                Console.WriteLine($"Lives: {lives}");
-
-                char guess = view.getguess();
-
-                if (Array.Exists(guessedletters, c => c == guess))
+                Console.WriteLine("No words available. Ask admin to add words.");
+                return;
+            }
+            Random random = new Random();
+            string word = words[random.Next(words.Count)].Text.ToLower();
+            GameState state = new GameState(word, lives: 3);
+            int wrongGuesses = 0;
+            HashSet<char> allGuessedLetters = new HashSet<char>();
+            while (state.Lives > 0 && !state.IsWordGuessed())
+            {
+                _view.ShowGameState(state.GuessedLetters, state.Lives, wrongGuesses);
+                char guess = _view.GetGuess();
+                if (allGuessedLetters.Contains(guess))
                 {
                     Console.WriteLine($"You already guessed '{guess}'. Try another letter.");
                     continue;
                 }
-
-                bool correct = guessrule(currentword, guessedletters, guess);
-
+                allGuessedLetters.Add(guess);
+                bool correct = _guessRule(state.CurrentWord, state.GuessedLetters, guess);
                 if (!correct)
                 {
-                    lives--;
-                    wrongguesses++;
+                    state.Lives--;
+                    wrongGuesses++;
                 }
                 else
                 {
-                    lives = 3;
-                    wrongguesses = 0;
+                    state.Lives = 3;
+                    wrongGuesses = 0;
                 }
             }
-
-            view.showgamestate(guessedletters, currentword.Length, wrongguesses);
-            view.showresult(currentword, new string(guessedletters) == currentword);
+            bool won = state.IsWordGuessed();
+            _view.ShowGameState(state.GuessedLetters, state.Lives, wrongGuesses, won);
+            _view.ShowResult(state.CurrentWord, won);
         }
     }
 }

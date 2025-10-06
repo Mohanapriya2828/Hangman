@@ -1,25 +1,36 @@
 using System;
 
-namespace hangman.view
+namespace Hangman.View
 {
-    public class gameview
+    public class GameView
     {
-        public void showgamestate(char[] guessed, int length, int wrongguesses)
+        public void ShowGameState(char[] guessed, int lives, int wrongGuesses, bool won = false)
         {
             Console.Write("\nWord: ");
             foreach (var c in guessed)
                 Console.Write(c + " ");
-            Console.WriteLine();
-            drawhangman(wrongguesses);
+            Console.WriteLine($"  |  Lives: {lives}");
+            DrawHangman(wrongGuesses, won);
         }
 
-        private void drawhangman(int wrongguesses)
+        private void DrawHangman(int wrongGuesses, bool won = false)
         {
-            if (wrongguesses == 0) return;
+            if (won)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(" \\O/ ");
+                Console.WriteLine("   |  ");
+                Console.WriteLine(" / \\ ");
+                Console.WriteLine("You won! Congratulations!");
+                Console.ResetColor();
+                return;
+            }
 
             Console.ForegroundColor = ConsoleColor.Red;
-            switch (wrongguesses)
+            switch (wrongGuesses)
             {
+                case 0:
+                    break;
                 case 1:
                     Console.WriteLine("  ______");
                     Console.WriteLine("  |    |");
@@ -34,9 +45,9 @@ namespace hangman.view
                     Console.WriteLine("  |    |");
                     Console.WriteLine("  |");
                     Console.WriteLine("  |");
-                    Console.WriteLine("      O");
-                    Console.WriteLine("     /|\\");
-                    Console.WriteLine("     / \\");
+                    Console.WriteLine("  |   O\"); 
+                    Console.WriteLine("  |  /|\\");
+                    Console.WriteLine("  |  / \\");
                     Console.WriteLine("__|__");
                     break;
                 case 3:
@@ -53,7 +64,7 @@ namespace hangman.view
             Console.ResetColor();
         }
 
-        public char getguess()
+        public char GetGuess()
         {
             Console.Write("Enter a letter: ");
             string input = Console.ReadLine().ToLower();
@@ -65,7 +76,7 @@ namespace hangman.view
             return input[0];
         }
 
-        public void showresult(string word, bool won)
+        public void ShowResult(string word, bool won)
         {
             Console.WriteLine();
             Console.WriteLine(won ? $"You guessed it! The word was {word}." : $"You lost. The word was {word}.");
