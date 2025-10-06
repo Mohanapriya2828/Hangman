@@ -31,10 +31,11 @@ namespace hangman.controller
                 guessedletters[i] = '_';
 
             int lives = 3;
+            int wrongguesses = 0;
 
             while (lives > 0 && new string(guessedletters) != currentword)
             {
-                view.showgamestate(guessedletters, currentword.Length, 0);
+                view.showgamestate(guessedletters, currentword.Length, wrongguesses);
                 Console.WriteLine($"Lives: {lives}");
 
                 char guess = view.getguess();
@@ -47,11 +48,19 @@ namespace hangman.controller
 
                 bool correct = guessrule(currentword, guessedletters, guess);
 
-                if (!correct) lives--;
-                else lives = 3;
+                if (!correct)
+                {
+                    lives--;
+                    wrongguesses++;
+                }
+                else
+                {
+                    lives = 3;
+                    wrongguesses = 0;
+                }
             }
 
-            view.showgamestate(guessedletters, currentword.Length, 0);
+            view.showgamestate(guessedletters, currentword.Length, wrongguesses);
             view.showresult(currentword, new string(guessedletters) == currentword);
         }
     }
